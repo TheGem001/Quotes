@@ -1,1 +1,323 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Daily Inspiration</title>
+    
+    <!-- Fonts: DM Serif Display for quotes, Inter for UI -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Icon Set (Phosphor Icons) -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        serif: ['"DM Serif Display"', 'serif'],
+                        sans: ['"Inter"', 'sans-serif'],
+                    },
+                    colors: {
+                        surface: '#1E1E1E',
+                        surfaceVariant: '#2D2D2D',
+                        primary: '#D0BCFF',
+                        onPrimary: '#381E72',
+                        secondary: '#CCC2DC',
+                        background: '#141218',
+                        text: '#E6E1E5',
+                        subtext: '#CAC4D0'
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.8s ease-out forwards',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Smooth transition for background colors */
+        body {
+            transition: background-color 1s ease;
+        }
+        
+        /* Custom Scrollbar for hidden aesthetics */
+        ::-webkit-scrollbar {
+            width: 0px;
+            background: transparent;
+        }
+
+        /* Glassmorphism utility */
+        .glass-card {
+            background: rgba(45, 45, 45, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        /* Progress Bar Animation */
+        .progress-bar {
+            transition: width 1s linear;
+        }
+    </style>
+</head>
+<body class="bg-background text-text font-sans h-screen w-full overflow-hidden flex flex-col items-center justify-center selection:bg-primary selection:text-onPrimary relative">
+
+    <!-- Ambient Background Orbs -->
+    <div class="absolute top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
+        <div class="absolute top-[-10%] left-[-10%] w-[50vh] h-[50vh] bg-primary/20 rounded-full blur-[100px] animate-pulse-slow"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[50vh] h-[50vh] bg-secondary/10 rounded-full blur-[100px] animate-pulse-slow" style="animation-delay: 2s;"></div>
+    </div>
+
+    <!-- Main Content Container -->
+    <main class="w-full max-w-md px-6 flex flex-col items-center justify-center h-full relative z-10">
+        
+        <!-- App Header -->
+        <header class="absolute top-8 w-full flex justify-between items-center px-2 opacity-80">
+            <div class="flex items-center gap-2">
+                <i class="ph-fill ph-sparkle text-primary text-xl"></i>
+                <span class="text-sm font-medium tracking-wider uppercase text-subtext">Inspire</span>
+            </div>
+            <div id="timer-badge" class="px-3 py-1 bg-surfaceVariant rounded-full text-xs font-medium text-subtext border border-white/5">
+                Next in 60s
+            </div>
+        </header>
+
+        <!-- Quote Card -->
+        <div id="quote-card" class="glass-card w-full p-8 md:p-10 rounded-[2.5rem] shadow-2xl transform transition-all duration-500 hover:scale-[1.02]">
+            
+            <!-- Category Tag -->
+            <div class="mb-6 flex justify-center">
+                <span id="category" class="px-4 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-bold tracking-widest uppercase border border-primary/20">
+                    Wisdom
+                </span>
+            </div>
+
+            <!-- Quote Text -->
+            <div class="relative mb-8 text-center">
+                <i class="ph-fill ph-quotes text-4xl text-surfaceVariant absolute -top-6 -left-2 opacity-50"></i>
+                <h1 id="quote-text" class="font-serif text-3xl md:text-4xl leading-tight text-white drop-shadow-sm min-h-[120px] flex items-center justify-center">
+                    Loading inspiration...
+                </h1>
+            </div>
+
+            <!-- Author -->
+            <div class="text-center">
+                <p id="author" class="text-lg font-medium text-subtext italic">
+                    — Please wait
+                </p>
+            </div>
+
+            <!-- Progress Bar (Visual Timer) -->
+            <div class="mt-8 w-full h-1 bg-white/10 rounded-full overflow-hidden">
+                <div id="progress" class="h-full bg-primary w-0 progress-bar"></div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex gap-4 mt-8">
+            <!-- Share Button -->
+            <button onclick="shareQuote()" class="group flex flex-col items-center gap-2 text-subtext hover:text-white transition-colors">
+                <div class="w-14 h-14 rounded-full bg-surfaceVariant flex items-center justify-center shadow-lg border border-white/5 group-active:scale-95 transition-transform">
+                    <i class="ph ph-share-network text-2xl"></i>
+                </div>
+                <span class="text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity">Share</span>
+            </button>
+
+            <!-- Refresh Button (Main FAB) -->
+            <button onclick="manualRefresh()" class="group flex flex-col items-center gap-2">
+                <div class="w-20 h-20 rounded-[2rem] bg-primary text-onPrimary flex items-center justify-center shadow-xl shadow-primary/20 hover:shadow-primary/40 transform hover:-translate-y-1 transition-all active:scale-95 active:translate-y-0">
+                    <i class="ph-bold ph-arrows-clockwise text-4xl group-hover:rotate-180 transition-transform duration-700"></i>
+                </div>
+                <span class="text-xs font-medium text-primary">Refresh</span>
+            </button>
+
+            <!-- Copy Button -->
+            <button onclick="copyQuote()" class="group flex flex-col items-center gap-2 text-subtext hover:text-white transition-colors">
+                <div class="w-14 h-14 rounded-full bg-surfaceVariant flex items-center justify-center shadow-lg border border-white/5 group-active:scale-95 transition-transform">
+                    <i class="ph ph-copy text-2xl"></i>
+                </div>
+                <span id="copy-label" class="text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity">Copy</span>
+            </button>
+        </div>
+
+    </main>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-white text-surface px-6 py-3 rounded-full shadow-2xl flex items-center gap-2 opacity-0 pointer-events-none transition-opacity duration-300 z-50">
+        <i class="ph-fill ph-check-circle text-green-600 text-lg"></i>
+        <span class="text-sm font-semibold">Copied to clipboard</span>
+    </div>
+
+    <script>
+        // --- Configuration ---
+        const API_URL = 'https://dummyjson.com/quotes/random';
+        const REFRESH_INTERVAL = 60; // seconds
+        
+        // --- State ---
+        let timeLeft = REFRESH_INTERVAL;
+        let timerId = null;
+        let currentQuote = "";
+        let currentAuthor = "";
+
+        // --- Fallback Data (Offline Mode) ---
+        const LOCAL_QUOTES = [
+            { quote: "The only way to do great work is to love what you do.", author: "Steve Jobs", category: "Success" },
+            { quote: "In the middle of difficulty lies opportunity.", author: "Albert Einstein", category: "Wisdom" },
+            { quote: "Life is what happens when you're busy making other plans.", author: "John Lennon", category: "Life" },
+            { quote: "It always seems impossible until it's done.", author: "Nelson Mandela", category: "Motivation" },
+            { quote: "Happiness depends upon ourselves.", author: "Aristotle", category: "Happiness" },
+            { quote: "Do what you can, with what you have, where you are.", author: "Theodore Roosevelt", category: "Action" },
+            { quote: "Be the change that you wish to see in the world.", author: "Mahatma Gandhi", category: "Change" }
+        ];
+
+        // --- DOM Elements ---
+        const quoteEl = document.getElementById('quote-text');
+        const authorEl = document.getElementById('author');
+        const categoryEl = document.getElementById('category');
+        const timerBadgeEl = document.getElementById('timer-badge');
+        const progressBarEl = document.getElementById('progress');
+        const quoteCardEl = document.getElementById('quote-card');
+        const toastEl = document.getElementById('toast');
+
+        // --- Core Functions ---
+
+        async function fetchQuote() {
+            // 1. Visual loading state
+            quoteEl.style.opacity = '0';
+            authorEl.style.opacity = '0';
+            
+            setTimeout(async () => {
+                try {
+                    // 2. Attempt API Fetch
+                    const response = await fetch(API_URL);
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    const data = await response.json();
+                    
+                    updateUI(data.quote, data.author, "Inspiration"); // API doesn't always give category, generic fallback
+                } catch (error) {
+                    console.log("API failed, using local fallback");
+                    // 3. Fallback to Local Data
+                    const randomLocal = LOCAL_QUOTES[Math.floor(Math.random() * LOCAL_QUOTES.length)];
+                    updateUI(randomLocal.quote, randomLocal.author, randomLocal.category);
+                }
+            }, 300); // Small delay to allow fade-out animation
+        }
+
+        function updateUI(quote, author, category) {
+            currentQuote = quote;
+            currentAuthor = author;
+
+            quoteEl.innerText = quote;
+            authorEl.innerText = `— ${author}`;
+            categoryEl.innerText = category || "Thought";
+
+            // Fade in
+            quoteEl.style.opacity = '1';
+            authorEl.style.opacity = '1';
+            
+            // Animation class reset to re-trigger
+            quoteEl.classList.remove('animate-fade-in');
+            void quoteEl.offsetWidth; // trigger reflow
+            quoteEl.classList.add('animate-fade-in');
+
+            // Reset Timer
+            resetTimer();
+        }
+
+        function resetTimer() {
+            timeLeft = REFRESH_INTERVAL;
+            updateTimerUI();
+            
+            if (timerId) clearInterval(timerId);
+            
+            timerId = setInterval(() => {
+                timeLeft--;
+                updateTimerUI();
+                
+                if (timeLeft <= 0) {
+                    fetchQuote();
+                }
+            }, 1000);
+        }
+
+        function updateTimerUI() {
+            // Update badge text
+            timerBadgeEl.innerText = `Next in ${timeLeft}s`;
+            
+            // Update progress bar width
+            const percentage = ((REFRESH_INTERVAL - timeLeft) / REFRESH_INTERVAL) * 100;
+            progressBarEl.style.width = `${percentage}%`;
+        }
+
+        function manualRefresh() {
+            // Add a little spin to the button logic is handled in CSS group-hover/active
+            // But we reset the timer manually
+            fetchQuote();
+        }
+
+        function copyQuote() {
+            const textToCopy = `"${currentQuote}" — ${currentAuthor}`;
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                showToast("Copied to clipboard");
+            }).catch(err => {
+                showToast("Failed to copy");
+            });
+        }
+
+        async function shareQuote() {
+            const shareData = {
+                title: 'Daily Inspiration',
+                text: `"${currentQuote}" — ${currentAuthor}`,
+                url: window.location.href
+            };
+
+            if (navigator.share) {
+                try {
+                    await navigator.share(shareData);
+                } catch (err) {
+                    console.log('Error sharing:', err);
+                }
+            } else {
+                copyQuote(); // Fallback for desktop/unsupported
+                showToast("Sharing not supported, copied instead");
+            }
+        }
+
+        function showToast(message) {
+            const textSpan = toastEl.querySelector('span');
+            textSpan.innerText = message;
+            
+            toastEl.style.opacity = '1';
+            toastEl.style.transform = 'translate(-50%, -10px)';
+            
+            setTimeout(() => {
+                toastEl.style.opacity = '0';
+                toastEl.style.transform = 'translate(-50%, 0)';
+            }, 2500);
+        }
+
+        // --- Initialization ---
+        window.onload = () => {
+            fetchQuote(); // Initial fetch
+        };
+
+    </script>
+</body>
+</html>
+
